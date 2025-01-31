@@ -1,0 +1,44 @@
+name: CI/CD for HTML Page
+
+on:
+  push:
+    branches:
+      - main  # Change to "master" if your repo uses that
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4  # Latest version
+
+      - name: Verify Files Exist
+        run: ls -R  # Lists all files to debug missing files
+
+      - name: Upload artifact to enable deployment
+        uses: actions/upload-artifact@v4  # Updated from v3 to v4
+        with:
+          name: html-files
+          path: |
+            index.html  # Upload index.html 
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for deploying to GitHub Pages
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4  # Updated from v3 to v4
+        with:
+          name: html-files
+          path: ./html
+
+      - name: Verify Downloaded Files
+        run: ls -R ./html  # Debugging step to check if files exist
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4  # Latest version
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./html
